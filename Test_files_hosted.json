@@ -1,0 +1,109 @@
+{
+	"info": {
+		"_postman_id": "b969e840-8484-42a5-a6f6-6e86e593271e",
+		"name": "MLaaS Project",
+		"description": "Data Product final project requests.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Single Prediction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"User\" : \"tortolala\",\n  \"Cl.thickness\":\"5\",\n  \"Cell.size\":\"2\",\n  \"Cell.shape\":\"1\"\n}\n"
+				},
+				"url": {
+					"raw": "35.173.192.128:8005/single_cancer_prediction",
+					"host": [
+						"35",
+						"173",
+						"192",
+						"128"
+					],
+					"port": "8005",
+					"path": [
+						"single_cancer_prediction"
+					]
+				},
+				"description": "Single prediction for cancer detection"
+			},
+			"response": []
+		},
+		{
+			"name": "Batch Prediction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"User\" : \"tortolala\",\n\t\"Observations\": {\n\t\t\"Cl.thickness\": [5, 2, 4, 5, 8, 7],\n\t\t\"Cell.size\": [1, 1, 2, 3, 7, 3],\n\t\t\"Cell.shape\": [1, 2, 1, 3, 5, 2]\n\t}\n}\n"
+				},
+				"url": {
+					"raw": "35.173.192.128:8005/multiple_cancer_prediction",
+					"host": [
+						"35",
+						"173",
+						"192",
+						"128"
+					],
+					"port": "8005",
+					"path": [
+						"multiple_cancer_prediction"
+					]
+				},
+				"description": "Batch prediction for cancer detection."
+			},
+			"response": []
+		},
+		{
+			"name": "Prediction Metrics",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"User\" : \"tortolala\",\n\t\"Observations\": {\n\t\t\"Cl.thickness\": [5, 2, 4, 5, 8, 7],\n\t\t\"Cell.size\": [1, 1, 2, 3, 7, 3],\n\t\t\"Cell.shape\": [1, 2, 1, 3, 5, 2],\n\t\t\"Class\": [0, 0, 0, 1, 1, 1]\n\t}\n}"
+				},
+				"url": {
+					"raw": "35.173.192.128:8005/performance_metrics",
+					"host": [
+						"35",
+						"173",
+						"192",
+						"128"
+					],
+					"port": "8005",
+					"path": [
+						"performance_metrics"
+					]
+				},
+				"description": "Important metrics obtained from the test data"
+			},
+			"response": []
+		}
+	]
+}
