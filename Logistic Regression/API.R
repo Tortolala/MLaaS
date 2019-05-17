@@ -102,7 +102,7 @@ function(Observations){
 function(Observations){
   
   Cl.thickness <- Observations$Cl.thickness
-  Cell.size <- Observations$Cell.size
+  Cl.thickness <- Observations$Cell.size
   Cell.shape <- Observations$Cell.shape
   Class <- Observations$Class
   
@@ -111,7 +111,47 @@ function(Observations){
   
   out<-predict(logitmod, newdata = batch_data, type = "response")
   
-  loginfo('USER: %s, ENDPOINT: %s, USER AGENT: %s, PAYLOAD: {Thickness: [%s], Size: [%s], Shape: [%s], Class: [%s]}, OUTPUT: %s',
+  test_data$pred <- ifelse(out > 0.5, "1", "0")
+  
+  fastAUC <- function(probs, class) {
+    x <- probs
+    y <- class
+    x1 = x[y==1]; n1 = length(x1); 
+    x2 = x[y==0]; n2 = length(x2);
+    r = rank(c(x1,x2))  
+    auc = (sum(r[1:n1]) - n1*(n1+1)/2) / n1 / n2
+    return(auc)
+  }
+  
+  AUC <- fastAUC(out, test_data$Class)
+  
+  TP <- 0
+  for (i in 1:nrow(test_data)) {
+    if(test_data$Class[i] == 1 & test_data$pred[i] == 1)  TP = TP+1
+  }
+  
+  TN <- 0
+  for (i in 1:nrow(test_data)) {
+    if(test_data$Class[i] == 0 & test_data$pred[i] == 0)  TN = TN+1
+  }
+  
+  FP <- 0
+  for (i in 1:nrow(test_data)) {
+    if(test_data$Class[i] == 0 & test_data$pred[i] == 1)  FP = FP+1
+  }
+  
+  FN <- 0
+  for (i in 1:nrow(test_data)) {
+    if(test_data$Class[i] == 1 & test_data$pred[i] == 0)  FN = FN+1
+  }
+  
+  ACC = format((TP + TN)/(TP + TN + FN + FP), digits=2, nsmall=2)
+  REC = format(TP/(TP + FN), digits=2, nsmall=2)
+  SPE = format(TN/(TN + FP), digits=2, nsmall=2)
+  PRC = format(TP/(TP + FP), digits=2, nsmall=2)
+  
+  
+  loginfo('USER: %s, ENDPOINT: %s, USER AGENT: %s, PAYLOAD: {Thickness: [%s], Size: [%s], Shape: [%s], Class: [%s]}, OUTPUT: CONFUSION MATRIX: [TP: %s, TN: %s, FP: %s, FN: %s], AUC: %s, ACCURACY: %s, RECALL: %s, SPECIFICITY: %s, PRECISION: %s',                                                    
           log_user, 
           log_endpoint,
           log_user_agent,
@@ -119,11 +159,39 @@ function(Observations){
           test_data$Cell.size,
           test_data$Cell.shape,
           test_data$Class,
-          as.character(format(out, digits=2, nsmall=2))
+          as.character(TP),
+          as.character(TN),
+          as.character(FP),
+          as.character(FN),
+          as.character(AUC),
+          as.character(ACC),
+          as.character(REC),
+          as.character(SPE),
+          as.character(PRC)
   )
   
-  as.character(format(out, digits=4, nsmall=4))
+  return(paste("AUC:", as.character(AUC), ", ACCURACY:", as.character(ACC), ", RECALL:", as.character(REC)))
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
