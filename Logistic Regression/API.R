@@ -12,7 +12,7 @@ basicConfig()
 users<- c("chzelada", "tortolala")
 
 # Trained model
-fit <- readRDS("final_model.rds")
+logitmod <- readRDS("final_model.rds")
 
 
 #' Saves information about the incoming request
@@ -102,7 +102,7 @@ function(Observations){
 function(Observations){
   
   Cl.thickness <- Observations$Cl.thickness
-  Cl.thickness <- Observations$Cell.size
+  Cell.size <- Observations$Cell.size
   Cell.shape <- Observations$Cell.shape
   Class <- Observations$Class
   
