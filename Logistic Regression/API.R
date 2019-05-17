@@ -63,7 +63,7 @@ function(Cl.thickness, Cell.size, Cell.shape){
           features$Cell.shape,
           out_final
           )
-  
+
   as.character(out_final)
 
 }

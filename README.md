@@ -69,7 +69,7 @@ Within this repository, you can find sample test files to try the API. There is 
 To finish the whole process of building a model and creating an API, it is key to deploy our service on the web, so it can be accesed from wherever we want to. In roder to do so, this API was deployed on a EC2 rented from AWS. 
 With this, you have to options to test this project: 
 * **Test local:** you can clone this repository, and use RStudio (or Rscript in the terminal) and Postman directly on your computer in order to recreate the API. 
-* **Test service hosted by me:** the EC2 will be publicly available for a limited time (2-3 weeks from the current commit date), so anyone can test the API without having to run it on RStudio or your terminal. All you need is Postman running on your computer and copying or downloading the **Test files** available here. The IP of the service is: **35.173.192.128**.
+* **Test service hosted by me:** the EC2 will be publicly available for a limited time (2-3 weeks from the current commit date), so anyone can test the API without having to run it on RStudio or your terminal. All you need is Postman running on your computer and copying or downloading the **Test files** available here. The IP of the service is: **3.84.60.20**.
 
-And remember, than in either a local or hosted enviroment, the API is running on the **8005 port** (and you could change so in the R scripts if needed).
+And remember, than in either a local or hosted enviroment, the API is running on the **8008 port** (and you could change so in the R scripts if needed).
 
