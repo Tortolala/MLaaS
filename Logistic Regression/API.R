@@ -2,6 +2,10 @@ library(dplyr)
 library(rpart)
 library(plumber)
 
+library(jsonlite)
+
+
+
 #* @apiTitle Survival Prediction
 #* @apiDescription Survival prediction for titanic Data
 
@@ -59,13 +63,24 @@ function(Cl.thickness, Cell.size, Cell.shape){
 #' @param Observations that the passenger was on
 #' @post /multiple_cancer_prediction
 function(Observations){
+  # json_data <- fromJSON(txt = Observations, flatten = TRUE)
+  # json_data
   # features <- data_frame(Cl.thickness=as.integer(Cl.thickness),
   #                        Cell.size=as.integer(Cell.size),
   #                        Cell.shape=as.integer(Cell.shape)
   # )
   # out<-predict(logitmod, features, type = "response")
   # as.character(out)
-  print(Observations)
+  
+  Cl.thickness <- c(as.integer(Observations$`1`$Cl.thickness), as.integer(Observations$`2`$Cl.thickness))
+  Cell.size <- c(as.integer(Observations$`1`$Cell.size), as.integer(Observations$`2`$Cell.size))
+  Cell.shape <- c(as.integer(Observations$`1`$Cell.shape), as.integer(Observations$`2`$Cell.shape))
+  batch_data <- data.frame(Cl.thickness, Cell.size, Cell.shape)
+  
+  out<-predict(logitmod, newdata = batch_data, type = "response")
+  
+  as.character(out)
+ 
 }
 
 
