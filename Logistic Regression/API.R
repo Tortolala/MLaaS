@@ -1,29 +1,24 @@
 library(dplyr)
-library(rpart)
 library(plumber)
-
 library(jsonlite)
-
 library(logging)
 basicConfig()
 
 
+#* @apiTitle Breast Cancer Detection API
+#* @apiDescription Breast cancer prediction model, based on cells' thickness, size, and shape.
 
-#* @apiTitle Survival Prediction
-#* @apiDescription Survival prediction for titanic Data
+# List of valid usernames
+users<- c("chzelada", "tortolala")
 
-ath_db<-
-  data_frame(user="chzelada",pass="hola123")
-
+# Trained model
 fit <- readRDS("final_model.rds")
 
-#' Log some information about the incoming request
+
+#' Saves information about the incoming request
 #' @param User
-#' @filter logger
+#' @filter Pre-logger
 function(req,User){
-  cat(as.character(Sys.time()), "-", 
-      req$REQUEST_METHOD, req$PATH_INFO, "-", 
-      req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR,' ',User, "\n")
   log_user <<- User
   log_endpoint <<- req$PATH_INFO
   log_user_agent <<- req$HTTP_USER_AGENT
@@ -32,30 +27,23 @@ function(req,User){
 }
 
 
-#' Log some information about the incoming request
+#' User verification
 #' @param User
-#' @param Password
 #' @filter Auth
-function(req,res,User,Password){
-  if(sum(User %in% ath_db$user)==1){
-    password<-ath_db %>% filter(user == User) %>% pull(pass)
-    if(Password==password){
-      plumber::forward()
-    } else {
-      res$status <- 401 # Unauthorized
-      return(list(error="incorrect Password"))
-    }
+function(req,res,User){
+  if(User %in% users){
+    plumber::forward()
   } else {
-    res$status <- 401 # Unauthorized
-    return(list(error="User doesnt exit"))   
+    res$status <- 401 # Unauthorized code 
+    logwarn('FAILED LOGIN BY USER: %s', User)
+    return(list(error="401: User does not exist"))   
   }
-  
 }
 
 
-#' @param Cl.thickness that the passenger was on
-#' @param Cell.size Passenger gender 
-#' @param Cell.shape Passenger age
+#' @param Cl.thickness Cells' thickness
+#' @param Cell.size Cells' size
+#' @param Cell.shape Cells' shape
 #' @post /single_cancer_prediction
 function(Cl.thickness, Cell.size, Cell.shape){
   features <- data_frame(Cl.thickness=as.integer(Cl.thickness),
@@ -64,43 +52,78 @@ function(Cl.thickness, Cell.size, Cell.shape){
                         )
   out<-predict(logitmod, features, type = "response")
   
-  loginfo('USER: %s, ENDPOINT: %s, USER AGENT: %s, PAYLOAD: {%s}, OUTPUT: %s',
+  out_final <- ifelse(out > 0.5, "malignant", "benign")
+  
+  loginfo('USER: %s, ENDPOINT: %s, USER AGENT: %s, PAYLOAD:  {Thickness: %s, Size: %s, Shape: %s}, OUTPUT: %s',
           log_user, 
           log_endpoint,
           log_user_agent,
-          features,
-          as.character(format(out, digits=2, nsmall=2))
+          features$Cl.thickness,
+          features$Cell.size,
+          features$Cell.shape,
+          out_final
           )
-     
-  as.character(out)
+  
+  as.character(out_final)
+
 }
 
 
-#' @param Observations that the passenger was on
+#' @param Observations Object with all observations on the batch
 #' @post /multiple_cancer_prediction
 function(Observations){
-  # json_data <- fromJSON(txt = Observations, flatten = TRUE)
-  # json_data
-  # features <- data_frame(Cl.thickness=as.integer(Cl.thickness),
-  #                        Cell.size=as.integer(Cell.size),
-  #                        Cell.shape=as.integer(Cell.shape)
-  # )
-  # out<-predict(logitmod, features, type = "response")
-  # as.character(out)
   
-  Cl.thickness <- c(as.integer(Observations$`1`$Cl.thickness), as.integer(Observations$`2`$Cl.thickness))
-  Cell.size <- c(as.integer(Observations$`1`$Cell.size), as.integer(Observations$`2`$Cell.size))
-  Cell.shape <- c(as.integer(Observations$`1`$Cell.shape), as.integer(Observations$`2`$Cell.shape))
+  Cl.thickness <- Observations$Cl.thickness
+  Cell.size <- Observations$Cell.size
+  Cell.shape <- Observations$Cell.shape
   batch_data <- data.frame(Cl.thickness, Cell.size, Cell.shape)
   
   out<-predict(logitmod, newdata = batch_data, type = "response")
   
-  as.character(out)
- 
+  out_final <- ifelse(out > 0.5, "malignant", "benign")
+  
+  loginfo('USER: %s, ENDPOINT: %s, USER AGENT: %s, PAYLOAD: {Thickness: [%s], Size: [%s], Shape: [%s]}, OUTPUT: %s',
+          log_user, 
+          log_endpoint,
+          log_user_agent,
+          batch_data$Cl.thickness,
+          batch_data$Cell.size,
+          batch_data$Cell.shape,
+          out_final
+  )
+  
+  as.character(out_final)
+  
 }
 
 
-#' @post /echo
-function(){
-  print('Hola')
+#' @param Observations Object with all observations on the batch
+#' @post /performance_metrics
+function(Observations){
+  
+  Cl.thickness <- Observations$Cl.thickness
+  Cell.size <- Observations$Cell.size
+  Cell.shape <- Observations$Cell.shape
+  Class <- Observations$Class
+  
+  batch_data <- data.frame(Cl.thickness, Cell.size, Cell.shape)
+  test_data <- data.frame(Cl.thickness, Cell.size, Cell.shape, Class)
+  
+  out<-predict(logitmod, newdata = batch_data, type = "response")
+  
+  loginfo('USER: %s, ENDPOINT: %s, USER AGENT: %s, PAYLOAD: {Thickness: [%s], Size: [%s], Shape: [%s], Class: [%s]}, OUTPUT: %s',
+          log_user, 
+          log_endpoint,
+          log_user_agent,
+          test_data$Cl.thickness,
+          test_data$Cell.size,
+          test_data$Cell.shape,
+          test_data$Class,
+          as.character(format(out, digits=2, nsmall=2))
+  )
+  
+  as.character(format(out, digits=4, nsmall=4))
+  
 }
+
+

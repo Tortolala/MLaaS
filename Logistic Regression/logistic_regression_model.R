@@ -1,6 +1,5 @@
 library(caret)
 
-
 data(BreastCancer, package="mlbench")
 bc <- BreastCancer[complete.cases(BreastCancer), ]
 
@@ -35,37 +34,26 @@ set.seed(100)
 down_train <- downSample(x = trainData[, colnames(trainData) %ni% "Class"],
                          y = trainData$Class)
 
-
 table(down_train$Class)
-
 
 # Build Logistic Model
 logitmod <- glm(Class ~ Cl.thickness + Cell.size + Cell.shape, family = "binomial", data=down_train)
 
 summary(logitmod)
 
-
-
-
 pred <- predict(logitmod, newdata = testData, type = "response")
-
 
 # Recode factors
 y_pred_num <- ifelse(pred > 0.5, 1, 0)
 y_pred <- factor(y_pred_num, levels=c(0, 1))
 y_act <- testData$Class
 
-
 mean(y_pred == y_act)  # 94+%
-
-
 
 # Single prediction
 single_test_data = data.frame(Cl.thickness = 5, Cell.size = 1, Cell.shape = 1)
 
 predict(logitmod, newdata = single_test_data, type = "response")
-
-
 
 # save RDS
 
