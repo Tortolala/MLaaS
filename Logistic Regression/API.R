@@ -4,6 +4,9 @@ library(plumber)
 
 library(jsonlite)
 
+library(logging)
+basicConfig()
+
 
 
 #* @apiTitle Survival Prediction
@@ -21,6 +24,10 @@ function(req,User){
   cat(as.character(Sys.time()), "-", 
       req$REQUEST_METHOD, req$PATH_INFO, "-", 
       req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR,' ',User, "\n")
+  log_user <<- User
+  log_endpoint <<- req$PATH_INFO
+  log_user_agent <<- req$HTTP_USER_AGENT
+  log_method <<- req$REQUEST_METHOD
   plumber::forward()
 }
 
@@ -56,6 +63,15 @@ function(Cl.thickness, Cell.size, Cell.shape){
                          Cell.shape=as.integer(Cell.shape)
                         )
   out<-predict(logitmod, features, type = "response")
+  
+  loginfo('USER: %s, ENDPOINT: %s, USER AGENT: %s, PAYLOAD: {%s}, OUTPUT: %s',
+          log_user, 
+          log_endpoint,
+          log_user_agent,
+          features,
+          as.character(format(out, digits=2, nsmall=2))
+          )
+     
   as.character(out)
 }
 
